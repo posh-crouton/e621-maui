@@ -27,5 +27,6 @@ namespace E621Maui.Lib.Models
         public Score Score { get; set; }
         public Flags Flags { get; set; }
         public Relationships Relationships { get; set; }
+        public Tags Tags { get; set; }
     }
 }
