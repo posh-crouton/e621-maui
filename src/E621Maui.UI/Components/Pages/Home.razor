@@ -3,3 +3,46 @@
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+<style>
+    body {
+        background: #152f56;
+    }
+
+    div.polaroid {
+        background: #ffffff;
+        margin: 5px;
+        padding: 20px;
+        background: 1px dashed red;
+    }
+
+    div.polaroid > img {
+        width: 400px;
+    }
+</style>
+
+@foreach (var post in Posts)
+{
+    <div class="polaroid">
+        <img src="@post.File.Url" />
+        <br /><span>Post: @post.Id</span>
+    </div>
+}
+
+@code
+{
+    public E621Maui.Lib.Models.Post[] Posts { get; set; } = [];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            E621Maui.Lib.ApiAccess api = new("", "");
+            api.Initialise();
+            Posts = await api.GetPostsAsync();
+            StateHasChanged();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+}
