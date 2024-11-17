@@ -1,6 +1,7 @@
 ﻿@page "/"
 @inject NavigationManager Navigation
 @using E621Maui.Lib.SettingsManager
+@using System.Diagnostics
 
 <style>
     body {
@@ -33,7 +34,7 @@
     .tag-lore {
         color: darkgreen;
     }
-    
+
     .tag-species {
         color: orangered;
     }
@@ -47,20 +48,35 @@
 {
     <div class="polaroid">
         <img src="@post.File.Url" />
-        <br />
-        @if (post.Tags.Artist.Length > 0)
-        {
-            @foreach (var artist in post.Tags.Artist)
-            {
-                <span class="tag-artist">
-                    @artist
-                </span>
-            }
-        }
-        else
-        {
-            <span>Artist unknown</span>
-        }
+
+        <div class="row">
+            <div class="col-2">
+                @if (post.Tags.Artist.Length > 0)
+                {
+                    @foreach (var artist in post.Tags.Artist)
+                    {
+                        <span class="tag-artist">
+                            @artist
+                        </span>
+                    }
+                }
+                else
+                {
+                    <span>Artist unknown</span>
+                }
+            </div>
+
+            <MudSpacer />
+
+            <div class="col-2">
+                <MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
+                    <MudIconButton Icon="@Icons.Material.Filled.MoreHoriz" />
+                    <MudIconButton Style="background: orange;" Icon="@Icons.Material.Filled.Download" OnClick="(async () => await SavePostAsync(post))" />
+                    <MudIconButton Style="@($"background: {(post.IsFavorited ? "red" : "green")};")"
+                                   Icon="@(post.IsFavorited ? Icons.Material.Filled.Star : Icons.Material.Filled.StarBorder)" />
+                </MudButtonGroup>
+            </div>
+        </div>
 
         <p>
             @post.Description
@@ -186,5 +202,28 @@
         }
 
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task SavePostAsync(E621Maui.Lib.Models.Post post)
+    {
+
+        string filePath = Path.Combine(FileSystem.AppDataDirectory, post.Id + "." + post.File.Url.Split('.').Last());
+
+        using (HttpClient client = new HttpClient())
+        {
+            HttpResponseMessage response = await client.GetAsync(post.File.Url);
+            response.EnsureSuccessStatusCode();
+
+            await using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                await response.Content.CopyToAsync(fs);
+            }
+        }
+
+        Process.Start(new ProcessStartInfo
+            {
+                FileName = filePath,
+                UseShellExecute = true // Ensures it uses the default app
+            });
     }
 }
