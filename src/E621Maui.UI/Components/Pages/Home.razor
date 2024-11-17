@@ -1,4 +1,6 @@
 ﻿@page "/"
+@inject NavigationManager Navigation
+@using E621Maui.Lib.SettingsManager
 
 <style>
     body {
@@ -158,13 +160,26 @@
 
 @code
 {
+    private AppSettingsManager Settings = new();
     public E621Maui.Lib.Models.Post[] Posts { get; set; } = [];
+
+    protected override void OnInitialized()
+    {
+        var user = Settings.E621UserName;
+        var key = Settings.E621ApiKey;
+        if (string.IsNullOrWhiteSpace(Settings.E621UserName) || string.IsNullOrWhiteSpace(Settings.E621ApiKey))
+        {
+            Navigation.NavigateTo("/login");
+        }
+
+        base.OnInitialized();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            E621Maui.Lib.ApiAccess api = new("", "");
+            E621Maui.Lib.ApiAccess api = new(Settings.E621UserName, Settings.E621ApiKey);
             api.Initialise();
             Posts = await api.GetPostsAsync();
             StateHasChanged();
