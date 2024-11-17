@@ -65,7 +65,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\E621Maui.Lib\E621Maui.Lib.csproj" />
+      <ProjectReference Include="..\E621Maui.Lib\E621Maui.Lib.csproj" />
     </ItemGroup>
 
 </Project>
