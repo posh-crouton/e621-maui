@@ -39,6 +39,28 @@ namespace E621Maui.Lib
             return JsonConvert.DeserializeObject<Post[]>(strippedContent) ?? [];
         }
 
+        public async Task FavouritePost(Post post)
+        {
+            if (_httpClient is null) return;
+            HttpContent content = new StringContent("");
+            HttpResponseMessage res = await _httpClient.PostAsync($"https://e621.net/favorites.json?login={UserName}&api_key={ApiKey}&post_id={post.Id}",
+                content);
+            if (res.IsSuccessStatusCode)
+            {
+                post.IsFavorited = true;
+            }
+        }
+
+        public async Task UnfavouritePost(Post post)
+        {
+            if (_httpClient is null) return;
+            HttpResponseMessage res = await _httpClient.DeleteAsync($"https://e621.net/favorites.json?login={UserName}&api_key={ApiKey}&post_id={post.Id}");
+            if (res.IsSuccessStatusCode)
+            {
+                post.IsFavorited = false;
+            }
+        }
+
         private class Posts
         {
             [JsonPropertyName("posts")]

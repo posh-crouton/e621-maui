@@ -73,7 +73,8 @@
                     <MudIconButton Icon="@Icons.Material.Filled.MoreHoriz" />
                     <MudIconButton Style="background: orange;" Icon="@Icons.Material.Filled.Download" OnClick="(async () => await SavePostAsync(post))" />
                     <MudIconButton Style="@($"background: {(post.IsFavorited ? "red" : "green")};")"
-                                   Icon="@(post.IsFavorited ? Icons.Material.Filled.Star : Icons.Material.Filled.StarBorder)" />
+                                   Icon="@(post.IsFavorited ? Icons.Material.Filled.Star : Icons.Material.Filled.StarBorder)"
+                                   OnClick="(async () => await ToggleFavourite(post))" />
                 </MudButtonGroup>
             </div>
         </div>
@@ -178,6 +179,7 @@
 {
     private AppSettingsManager Settings = new();
     public E621Maui.Lib.Models.Post[] Posts { get; set; } = [];
+    E621Maui.Lib.ApiAccess Api { get; set; }
 
     protected override void OnInitialized()
     {
@@ -188,6 +190,8 @@
             Navigation.NavigateTo("/login");
         }
 
+        Api = new(Settings.E621UserName, Settings.E621ApiKey);
+
         base.OnInitialized();
     }
 
@@ -195,9 +199,8 @@
     {
         if (firstRender)
         {
-            E621Maui.Lib.ApiAccess api = new(Settings.E621UserName, Settings.E621ApiKey);
-            api.Initialise();
-            Posts = await api.GetPostsAsync();
+            Api.Initialise();
+            Posts = await Api.GetPostsAsync();
             StateHasChanged();
         }
 
@@ -225,5 +228,17 @@
                 FileName = filePath,
                 UseShellExecute = true // Ensures it uses the default app
             });
+    }
+
+    private async Task ToggleFavourite(E621Maui.Lib.Models.Post post)
+    {
+        if (post.IsFavorited)
+        {
+            await Api.UnfavouritePost(post);
+        }
+        else
+        {
+            await Api.FavouritePost(post);
+        }
     }
 }
